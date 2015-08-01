@@ -1,6 +1,7 @@
 package com.chatserver;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -31,7 +32,7 @@ public class Messenger {
 	@Path("/{producer}/send/{consumer}")
 	@Consumes(MediaType.TEXT_PLAIN)
 	public Response sendMessage(@PathParam("producer") String producer, @PathParam("consumer") String consumer, String message) {
-		boolean value = MessageStore.getMessageStore().saveMessages(producer, consumer, DateTime.now(), message);
+		boolean value = MessageStore.getMessageStore().saveMessages(producer, consumer, DateTime.now().toString(), message);
 		
 		if (value == true)
 			return Response.status(200).entity(producer + " : " + message).build();
@@ -43,12 +44,17 @@ public class Messenger {
 	@Path("/{consumer}/receive")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getMessage(@PathParam("consumer") String consumer) {
-		List<Message> messages = MessageStore.getMessageStore().getMessages(consumer);
+		Map<Long, List<Message>> messages = MessageStore.getMessageStore().getMessages(consumer);
+		
 		try {
-			return Response.status(200).entity(mapper.writeValueAsString(messages)).build();
+			return Response.status(200).entity(mapper.writeValueAsString(messages.get(messages.keySet().toArray()[0]))).build();
 		} catch (JsonProcessingException e) {
 			return Response.status(500).entity(e).build();
+		} finally {
+			// mark the messages as read by the consumer
+			MessageStore.getMessageStore().markRead(consumer, (Long) messages.keySet().toArray()[0]);
 		}
+		
 	}
 	
 	@GET

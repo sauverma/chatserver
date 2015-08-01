@@ -1,10 +1,9 @@
 package com.chatserver.bean;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.joda.time.DateTime;
 
 /**
  * 
@@ -42,14 +41,22 @@ public class MessageStore {
 		return messageStore;
 	}
 	
-	public List<Message> getMessages (String consumer) {
+	public Map<Long, List<Message>> getMessages (String consumer) {
 		if (messages.get(consumer) == null) 
-			return new ArrayList<Message>();
+			return new HashMap<Long, List<Message>>();
 
 		return messages.get(consumer).readMessage();
 	}
 	
-	public boolean saveMessages (String producer, String consumer, DateTime timestamp, String message) {
+	public long markRead(String consumer, long offset) {
+		if (messages.get(consumer) != null) {
+			return messages.get(consumer).markRead(offset);
+		}
+		
+		return -1;
+	}
+	
+	public boolean saveMessages (String producer, String consumer, String timestamp, String message) {
 		
 		if (messages.get(consumer) == null) {
 			synchronized (myLock) {
@@ -59,7 +66,11 @@ public class MessageStore {
 			}
 		}
 		
-		messages.get(consumer).saveMessage(new Message(producer, consumer, timestamp, message));
+		/*
+		 * save the message locally and then transmit it for getting replicated on the sibling chatServers
+		 */
+		messages.get(consumer).saveMessage(new Message(producer, consumer, timestamp.toString(), message));
+		
 		
 		return true;
 	}

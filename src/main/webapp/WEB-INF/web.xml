@@ -43,6 +43,11 @@
 	</context-param>
 	
 	<context-param>
+		<param-name>topologyPort</param-name>
+		<param-value>8094</param-value>
+	</context-param>
+	
+	<context-param>
 		<param-name>brokerId</param-name>
 		<param-value>chatServer_1</param-value>
 	</context-param>

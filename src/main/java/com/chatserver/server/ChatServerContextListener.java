@@ -1,4 +1,4 @@
-package com.chatserver.processing;
+package com.chatserver.server;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -33,6 +33,7 @@ public class ChatServerContextListener implements ServletContextListener {
 		config.setReplicaPort(sc.getInitParameter("replicaPort"));
 		config.setMasterConfigServer(sc.getInitParameter("coordinatorIp"));
 		config.setLogLocation(sc.getInitParameter("logLocation"));
+		config.setTopologyPort(sc.getInitParameter("topologyPort"));
 
 		try {
 			logger.info("Configuration : " + mapper.writeValueAsString(config));

@@ -4,6 +4,7 @@ public class Configuration {
 	private String identityPort;
 	private String replicaPort;
 	private String heartbeatPort;
+	private String topologyPort;
 	private String brokerId;
 	private String masterConfigServer;
 	private String logLocation;
@@ -46,6 +47,14 @@ public class Configuration {
 
 	public void setHeartbeatPort(String heartbeatPort) {
 		this.heartbeatPort = heartbeatPort;
+	}
+	
+	public void setTopologyPort(String topologyPort) {
+		this.topologyPort = topologyPort;
+	}
+	
+	public String getTopologyPort() {
+		return topologyPort;
 	}
 	
 	public String getMasterConfigServer() {

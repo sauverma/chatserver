@@ -1,7 +1,11 @@
 package com.chatserver.bean;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -12,7 +16,7 @@ import java.util.List;
  */
 
 public class MessageQueue {
-	//private static final Logger logger = Logger.getLogger(MessageQueue.class);
+	private static final Logger logger = Logger.getLogger(MessageQueue.class);
 	
 	private final List<Message> messageList;
 	private long offset;
@@ -46,21 +50,26 @@ public class MessageQueue {
 		return messageList.add(message);
 	}
 	
-	public synchronized List<Message> readMessage() {
+	public synchronized Map<Long, List<Message>> readMessage() {
 		List<Message> msgs = new ArrayList<Message>();
 		
-		for (long i = offset; i < messageList.size(); i++) {
+		long i = offset;
+		
+		for (; i < messageList.size(); i++) {
 			msgs.add(messageList.get((int) i));
 		}
 		
-		return msgs;
+		Map<Long, List<Message>> retMap = new HashMap<Long, List<Message>>();
+		retMap.put(i, msgs);
+		return retMap;
 	}
 	
-	private synchronized void markRead (long offsetIncrement) {
-		if (offset + offsetIncrement < messageList.size()) {
-			System.out.println("Error : cant increment by offsetIncrement");
+	public synchronized long markRead (long offset) {
+		if (offset > messageList.size()) {
+			logger.error("Invalid offset passed in markRead");
 		}
 		
-		offset += offsetIncrement;
+		this.offset = offset;
+		return this.offset;
 	}
 }
