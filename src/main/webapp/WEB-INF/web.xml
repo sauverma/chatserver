@@ -1,7 +1,64 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:web="http://xmlns.jcp.org/xml/ns/javaee">
+	<display-name>ChatServer</display-name>
+	<servlet>
+		<servlet-name>jersey-serlvet</servlet-name>
+		<servlet-class>
+			com.sun.jersey.spi.container.servlet.ServletContainer
+		</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.chatserver</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>jersey-serlvet</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description>JAX-RS Tools Generated - Do not modify</description>
+		<servlet-name>JAX-RS Servlet</servlet-name>
+		<servlet-class>com.chatserver.Messenger</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>JAX-RS Servlet</servlet-name>
+		<url-pattern>/jaxrs/*</url-pattern>
+	</servlet-mapping>
 
-<web-app>
-  <display-name>Archetype Created Web Application</display-name>
+	<context-param>
+		<param-name>identityPort</param-name>
+		<param-value>8091</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>replicaPort</param-name>
+		<param-value>8092</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>heartbeatPort</param-name>
+		<param-value>8093</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>brokerId</param-name>
+		<param-value>chatServer_1</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>coordinatorIp</param-name>
+		<param-value>localhost:9001</param-value>
+	</context-param>
+	
+	<context-param>
+		<param-name>logLocation</param-name>
+		<param-value>./logs/chatserver/logging.log</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>com.chatserver.processing.ChatServerContextListener</listener-class>
+	</listener>
+
 </web-app>
