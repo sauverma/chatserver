@@ -27,6 +27,7 @@ public class ChatServerContextListener implements ServletContextListener {
 		ServletContext sc = sce.getServletContext();
 		Configuration config = Configuration.getConfiguration();
 
+		config.setHost(sc.getInitParameter("host"));
 		config.setIdentityPort(sc.getInitParameter("identityPort"));
 		config.setBrokerId(sc.getInitParameter("brokerId"));
 		config.setHeartbeatPort(sc.getInitParameter("heartbeatPort"));

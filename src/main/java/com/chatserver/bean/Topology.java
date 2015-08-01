@@ -1,5 +1,6 @@
 package com.chatserver.bean;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
@@ -8,8 +9,7 @@ import org.apache.log4j.Logger;
  * 
  * @author sauverma
  *
- * This class holds the which chatServers are connected to form a cluster
- * Also keeps track of chatServers if they are alive or not, remove them if they are not alive
+ * This class holds the topology means which chatServers are connected to form a cluster
  * 
  */
 
@@ -35,5 +35,13 @@ public class Topology {
 	
 	public ChatServer getChatServer(String csId) {
 		return chatServers.get(csId);
+	}
+	
+	public void removeChatServer(String csId) {
+		chatServers.remove(csId);
+	}
+	
+	public Collection<ChatServer> getChatServers() {
+		return chatServers.values();
 	}
 }

@@ -2,6 +2,7 @@ package com.chatserver.bean;
 
 public class ChatServer {
 	private String brokerId;
+	private String host;
 	private String identityPort;
 	private String replicaPort;
 	private String heartbeatPort;
@@ -11,6 +12,10 @@ public class ChatServer {
 
 	public String getBrokerId() {
 		return brokerId;
+	}
+	
+	public String getHost() {
+		return host;
 	}
 
 	public String getIdentityPort() {

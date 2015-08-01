@@ -1,6 +1,7 @@
 package com.chatserver.configuration;
 
 public class Configuration {
+	private String host;
 	private String identityPort;
 	private String replicaPort;
 	private String heartbeatPort;
@@ -15,6 +16,14 @@ public class Configuration {
 	
 	public static Configuration getConfiguration() {
 		return configuration;
+	}
+	
+	public String getHost() {
+		return host;
+	}
+	
+	public void setHost(String host) {
+		this.host = host;
 	}
 	
 	public String getBrokerId() {
