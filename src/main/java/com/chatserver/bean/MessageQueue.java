@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.chatserver.utils.Utils;
+
 /**
  * 
  * @author sauverma
@@ -46,8 +48,9 @@ public class MessageQueue {
 		return messageList.addAll(messages);
 	}
 	
-	public synchronized boolean saveMessage (Message message) {
-		return messageList.add(message);
+	public synchronized long saveMessage (Message message) {
+		messageList.add(message);
+		return messageList.size();
 	}
 	
 	public synchronized Map<Long, List<Message>> readMessage() {

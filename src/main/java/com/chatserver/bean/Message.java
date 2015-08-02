@@ -1,6 +1,8 @@
 package com.chatserver.bean;
 
-import org.joda.time.DateTime;
+import com.chatserver.utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 
 public class Message {
 	private final String producer;
@@ -33,5 +35,15 @@ public class Message {
 	
 	public String getMessage() {
 		return message;
+	}
+	
+	public String toString() {
+		try {
+			return Utils.getObjectMapper().writeValueAsString(this);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }

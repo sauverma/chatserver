@@ -6,9 +6,11 @@ import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Utils {
-	
 	private static final Logger logger = Logger.getLogger(Utils.class);
+	private static ObjectMapper mapper = new ObjectMapper();
 	
 	public static Socket getSocketConnection(String destIp, String destPort) {
 		Socket socket = null;
@@ -29,5 +31,13 @@ public class Utils {
 	
 	public static String getMessageEndTerminal() {
 		return "%^%";
+	}
+	
+	public static String getActionableLogHeader() {
+		return " ACTIONABLE ";
+	}
+	
+	public static ObjectMapper getObjectMapper() {
+		return mapper;
 	}
 }

@@ -5,7 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.log4j.Logger;
+
 import com.chatserver.client.ReplicaClientManager;
+import com.chatserver.utils.Utils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * 
@@ -18,6 +22,8 @@ import com.chatserver.client.ReplicaClientManager;
  */
 
 public class MessageStore {
+	private static final Logger logger = Logger.getLogger(MessageStore.class);
+	
 	private static Object myLock = new Object();
 
 	/*
@@ -62,6 +68,11 @@ public class MessageStore {
 			 */
 			ReplicaClientManager.getReplicaClientManager().broadcastReplicatOffsetUpdate(Topology.getTopology().getChatServers(), consumer, offset);
 			
+			/*
+			 * log this edition
+			 */
+			logger.info(Utils.getActionableLogHeader() + ":" + consumer + ":" + offset);
+			
 			return retOffset;
 		}
 		
@@ -71,6 +82,7 @@ public class MessageStore {
 	public long markReadLocal(String consumer, long offset) {
 		if (messages.get(consumer) != null) {
 			long retOffset = messages.get(consumer).markRead(offset);
+			logger.info(Utils.getActionableLogHeader() + ":" + consumer + ":" + offset);
 			return retOffset;
 		}
 		
@@ -92,9 +104,16 @@ public class MessageStore {
 		 * on the sibling chatServers
 		 */
 		Message msg = new Message(producer, consumer, timestamp.toString(), message);
-		messages.get(consumer).saveMessage(msg);
+		long index = messages.get(consumer).saveMessage(msg);
 		ReplicaClientManager.getReplicaClientManager().broadcastReplicaCopyRequest(Topology.getTopology().getChatServers(), msg);
 
+		try {
+			logger.info(Utils.getActionableLogHeader() + ":" + index + ":" + Utils.getObjectMapper().writeValueAsString(msg));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			logger.error(e);
+		}
+		
 		return true;
 	}
 	
@@ -109,7 +128,14 @@ public class MessageStore {
 		}
 		
 		Message msg = new Message(producer, consumer, timestamp.toString(), message);
-		messages.get(consumer).saveMessage(msg);
+		long index = messages.get(consumer).saveMessage(msg);
+		
+		try {
+			logger.info(Utils.getActionableLogHeader() + ":" + index + ":" + Utils.getObjectMapper().writeValueAsString(msg));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			logger.error(e);
+		}
 
 		return true;
 	}
