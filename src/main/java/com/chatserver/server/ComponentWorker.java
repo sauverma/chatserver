@@ -10,6 +10,8 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
+import com.chatserver.utils.Utils;
+
 public abstract class ComponentWorker implements Callable<String> {
 	private static final Logger logger = Logger.getLogger(ComponentWorker.class);
 	
@@ -29,6 +31,8 @@ public abstract class ComponentWorker implements Callable<String> {
 	
 	@Override
 	public String call() throws Exception {
+		logger.debug("Request from : " + clientSocket.getRemoteSocketAddress());
+		
 		String response = "";
 		
 		InputStream input = clientSocket.getInputStream();
@@ -39,7 +43,11 @@ public abstract class ComponentWorker implements Callable<String> {
 		String cmd = "";
 		
 		while ((cmd = br.readLine()) != null) {
+			if (cmd.equals(Utils.getMessageEndTerminal()))
+				break;
+			
 			msg += cmd;
+			logger.debug(cmd);
 		}
 		
 		logger.debug("CMD : " + msg);
@@ -48,7 +56,9 @@ public abstract class ComponentWorker implements Callable<String> {
 		logger.debug("REPLY : " + reply);
 		
 		PrintWriter pw = new PrintWriter(output);
-		pw.write(reply);
+		pw.println(reply);
+		pw.println(Utils.getMessageEndTerminal());
+		pw.flush();
 		
 		br.close();
 		pw.close();

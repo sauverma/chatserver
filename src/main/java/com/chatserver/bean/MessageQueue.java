@@ -66,7 +66,7 @@ public class MessageQueue {
 	
 	public synchronized long markRead (long offset) {
 		if (offset > messageList.size()) {
-			logger.error("Invalid offset passed in markRead");
+			logger.error("Invalid offset passed in markRead : " + offset + " ; " + messageList.size());
 		}
 		
 		this.offset = offset;

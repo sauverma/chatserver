@@ -1,10 +1,13 @@
 package com.chatserver;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -14,6 +17,7 @@ import com.chatserver.bean.ChatServer;
 import com.chatserver.bean.Topology;
 import com.chatserver.client.TopologyClientManager;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,6 +86,21 @@ public class TopologyService {
 			logger.error(e);
 			return Response.status(500).entity(e).build();
 		} catch (IOException e) {
+			e.printStackTrace();
+			logger.error(e);
+			return Response.status(500).entity(e).build();
+		}
+	}
+	
+	@Path("/get")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getTopology() {
+		Collection<ChatServer> csList = Topology.getTopology().getChatServers();
+		
+		try {
+			return Response.status(200).entity(mapper.writeValueAsString(csList)).build();
+		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			logger.error(e);
 			return Response.status(500).entity(e).build();

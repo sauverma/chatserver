@@ -1,5 +1,7 @@
 package com.chatserver.client;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,36 +18,41 @@ import org.apache.log4j.Logger;
 import com.chatserver.bean.ChatServer;
 import com.chatserver.bean.Message;
 import com.chatserver.configuration.Configuration;
+import com.chatserver.utils.Utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReplicaClientManager {
 	private static final Logger logger = Logger.getLogger(ReplicaClientManager.class);
-	
+
 	private static final ObjectMapper mapper = new ObjectMapper();
-	
+
 	private ExecutorService executorService = Executors.newFixedThreadPool(10);
-	
+
 	private static ReplicaClientManager rcManager = new ReplicaClientManager();
-	
+
 	private static Random random = new Random();
-	
-	private ReplicaClientManager() {}
-	
+
+	private ReplicaClientManager() {
+	}
+
 	public static ReplicaClientManager getReplicaClientManager() {
 		return rcManager;
 	}
-	
+
 	/*
 	 * Updates offset per consumer across chatServer cluster
 	 */
 	public boolean broadcastReplicatOffsetUpdate(Collection<ChatServer> chatServers, String consumer, long offset) {
 		for (ChatServer chatServer : chatServers) {
+
+			Socket socket = Utils.getSocketConnection(chatServer.getHost(), chatServer.getReplicaPort());
+
 			String reqId = Configuration.getConfiguration().getBrokerId() + "_" + Math.abs(random.nextInt());
-			
-			Map<String, Long> consumerOffset = new HashMap<String, Long> ();
+
+			Map<String, Long> consumerOffset = new HashMap<String, Long>();
 			consumerOffset.put(consumer, offset);
-			
+
 			String cmd = "updateOffsets";
 			String payload = "";
 			try {
@@ -55,34 +62,48 @@ public class ReplicaClientManager {
 				logger.error(e);
 				return false;
 			}
-			
-			Future<String> response = executorService.submit(new ComponentClient(reqId, chatServer.getHost(), chatServer.getReplicaPort(), cmd, payload));
+
+			Future<String> response = executorService.submit(new ComponentClient(reqId, socket, cmd, payload));
 			try {
 				logger.debug("Replica UpdateOffset Request : " + response.get());
-				
+
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				logger.error(e);
+				return false;
 			} catch (ExecutionException e) {
 				e.printStackTrace();
+				logger.error(e);
+				return false;
+			} finally {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					logger.error(e);
+				}
 			}
 		}
 		return true;
 	}
-	
+
 	/*
 	 * Takes care of broadcasting message updates on a chatserver
 	 */
 	public boolean broadcastReplicaCopyRequest(Collection<ChatServer> chatServers, Message message) {
 		for (ChatServer chatServer : chatServers) {
 			/*
-			 * send the replication request on the replicaPort of the sibling chatServers
+			 * send the replication request on the replicaPort of the sibling
+			 * chatServers
 			 */
-			
+
+			Socket socket = Utils.getSocketConnection(chatServer.getHost(), chatServer.getReplicaPort());
+
 			String reqId = Configuration.getConfiguration().getBrokerId() + "_" + Math.abs(random.nextInt());
-			
+
 			Map<String, List<Message>> messages = new HashMap<String, List<Message>>();
 			messages.put(message.getConsumer(), Arrays.asList(message));
-			
+
 			String cmd = "copy";
 			String payload;
 			try {
@@ -92,15 +113,26 @@ public class ReplicaClientManager {
 				logger.error(e1);
 				return false;
 			}
-			
-			Future<String> response = executorService.submit(new ComponentClient(reqId, chatServer.getHost(), chatServer.getReplicaPort(), cmd, payload));
+
+			Future<String> response = executorService.submit(new ComponentClient(reqId, socket, cmd, payload));
 			try {
 				logger.debug("Replica Copy Request : " + response.get());
-				
+
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				logger.error(e);
+				return false;
 			} catch (ExecutionException e) {
 				e.printStackTrace();
+				logger.error(e);
+				return false;
+			} finally {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					logger.error(e);
+				}
 			}
 		}
 		return true;
