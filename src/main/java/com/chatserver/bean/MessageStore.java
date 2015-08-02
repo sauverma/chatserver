@@ -54,9 +54,26 @@ public class MessageStore {
 
 	public long markRead(String consumer, long offset) {
 		if (messages.get(consumer) != null) {
-			return messages.get(consumer).markRead(offset);
+			long retOffset = messages.get(consumer).markRead(offset);
+			
+			/*
+			 * update the sibling chatServers about the readOffset update
+			 * for this consumer
+			 */
+			ReplicaClientManager.getReplicaClientManager().broadcastReplicatOffsetUpdate(Topology.getTopology().getChatServers(), consumer, offset);
+			
+			return retOffset;
 		}
-
+		
+		return -1;
+	}
+	
+	public long markReadLocal(String consumer, long offset) {
+		if (messages.get(consumer) != null) {
+			long retOffset = messages.get(consumer).markRead(offset);
+			return retOffset;
+		}
+		
 		return -1;
 	}
 
@@ -77,6 +94,22 @@ public class MessageStore {
 		Message msg = new Message(producer, consumer, timestamp.toString(), message);
 		messages.get(consumer).saveMessage(msg);
 		ReplicaClientManager.getReplicaClientManager().broadcastReplicaCopyRequest(Topology.getTopology().getChatServers(), msg);
+
+		return true;
+	}
+	
+	public boolean saveMessagesLocal(String producer, String consumer, String timestamp, String message) {
+
+		if (messages.get(consumer) == null) {
+			synchronized (myLock) {
+				if (messages.get(consumer) == null) {
+					messages.put(consumer, new MessageQueue());
+				}
+			}
+		}
+		
+		Message msg = new Message(producer, consumer, timestamp.toString(), message);
+		messages.get(consumer).saveMessage(msg);
 
 		return true;
 	}

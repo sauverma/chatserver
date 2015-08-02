@@ -35,7 +35,7 @@ public class Messenger {
 		boolean value = MessageStore.getMessageStore().saveMessages(producer, consumer, DateTime.now().toString(), message);
 		
 		if (value == true)
-			return Response.status(200).entity(producer + " : " + message).build();
+			return Response.status(200).entity("ok").build();
 		else
 			return Response.status(500).entity("Message push failed").build();
 	}

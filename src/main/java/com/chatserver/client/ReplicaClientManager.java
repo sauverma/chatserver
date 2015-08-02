@@ -36,29 +36,67 @@ public class ReplicaClientManager {
 		return rcManager;
 	}
 	
-	public boolean broadcastReplicaCopyRequest(Collection<ChatServer> chatServers, Message message) {
+	/*
+	 * Updates offset per consumer across chatServer cluster
+	 */
+	public boolean broadcastReplicatOffsetUpdate(Collection<ChatServer> chatServers, String consumer, long offset) {
 		for (ChatServer chatServer : chatServers) {
-			/*
-			 * send the replication request on the replicaPort of the chatServer
-			 */
+			String reqId = Configuration.getConfiguration().getBrokerId() + "_" + Math.abs(random.nextInt());
 			
-			String reqId = Configuration.getConfiguration().getBrokerId() + "_" + random.nextLong();
+			Map<String, Long> consumerOffset = new HashMap<String, Long> ();
+			consumerOffset.put(consumer, offset);
 			
-			Map<String, List<Message>> messages = new HashMap<String, List<Message>>();
-			messages.put(message.getConsumer(), Arrays.asList(message));
-			
-			String cmd;
+			String cmd = "updateOffsets";
+			String payload = "";
 			try {
-				cmd = mapper.writeValueAsString(messages);
+				payload = mapper.writeValueAsString(consumerOffset);
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
 				logger.error(e);
 				return false;
 			}
 			
-			Future<String> response = executorService.submit(new ComponentClient(reqId, chatServer.getHost(), chatServer.getReplicaPort(), cmd));
+			Future<String> response = executorService.submit(new ComponentClient(reqId, chatServer.getHost(), chatServer.getReplicaPort(), cmd, payload));
 			try {
-				logger.debug("Replica copy Request : " + response.get());
+				logger.debug("Replica UpdateOffset Request : " + response.get());
+				
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+		return true;
+	}
+	
+	/*
+	 * Takes care of broadcasting message updates on a chatserver
+	 */
+	public boolean broadcastReplicaCopyRequest(Collection<ChatServer> chatServers, Message message) {
+		for (ChatServer chatServer : chatServers) {
+			/*
+			 * send the replication request on the replicaPort of the sibling chatServers
+			 */
+			
+			String reqId = Configuration.getConfiguration().getBrokerId() + "_" + Math.abs(random.nextInt());
+			
+			Map<String, List<Message>> messages = new HashMap<String, List<Message>>();
+			messages.put(message.getConsumer(), Arrays.asList(message));
+			
+			String cmd = "copy";
+			String payload;
+			try {
+				payload = mapper.writeValueAsString(messages);
+			} catch (JsonProcessingException e1) {
+				e1.printStackTrace();
+				logger.error(e1);
+				return false;
+			}
+			
+			Future<String> response = executorService.submit(new ComponentClient(reqId, chatServer.getHost(), chatServer.getReplicaPort(), cmd, payload));
+			try {
+				logger.debug("Replica Copy Request : " + response.get());
+				
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (ExecutionException e) {

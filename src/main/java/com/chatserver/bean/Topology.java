@@ -29,6 +29,10 @@ public class Topology {
 		return topology;
 	}
 	
+	public boolean hasChatServer(ChatServer cs) {
+		return chatServers.contains(cs);
+	}
+	
 	public void addChatServer(ChatServer cs) {
 		chatServers.put(cs.getBrokerId(), cs);
 	}

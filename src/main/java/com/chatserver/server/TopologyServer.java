@@ -6,12 +6,15 @@ package com.chatserver.server;
  *
  * This class spawns the Topology knowledge threads,
  * these are responsible for knowing which chatServers are
- * my siblings, which are up/down
+ * my siblings, which are alive/dead
  * 
- * The MasterConfigServer will keep on updating the 
- * ChatServers via these TopologyServer threads, if the MCS
- * goes down, then the ChatServers will work with a cache of
- * topology considering it to be the true one
+ * The ChatServers will create the topology amongst themselves
+ * For ex. if neighbour(cs1) = {cs2,cs3} and cs4 is added to cs1
+ * as a neighbour, then while this addition, cs4 will get info
+ * about the neighour(cs1) and similarly cs1 will get info about
+ * neighbour(cs4), then topology updates would happen and finally
+ * all the CS will know about each other 
+ * 
  */
 
 public class TopologyServer extends ComponentServer {

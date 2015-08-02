@@ -68,7 +68,7 @@
 	</context-param>
 
 	<listener>
-		<listener-class>com.chatserver.processing.ChatServerContextListener</listener-class>
+		<listener-class>com.chatserver.server.ChatServerContextListener</listener-class>
 	</listener>
 
 </web-app>
