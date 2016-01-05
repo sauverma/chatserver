@@ -8,7 +8,3 @@ MAINTAINER sauverma
 #	&& export PATH=$PATH:$GOROOT/bin 
 
 ADD src/ modules/
-
-
-
-
